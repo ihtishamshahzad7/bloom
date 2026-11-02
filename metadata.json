@@ -1,0 +1,6 @@
+{
+  "name": "Bloom",
+  "description": "Safe, romantic matchmaking for young adults with soft neumorphic glow, candle mode, compatibility quizzes, and thoughtful dates.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

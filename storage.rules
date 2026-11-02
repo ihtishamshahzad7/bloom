@@ -1,0 +1,50 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Profile photos & covers: Owner can upload/delete, all authenticated users can read
+    match /users/{userId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId) &&
+                      request.resource.size < 10 * 1024 * 1024 && // max 10MB
+                      request.resource.contentType.matches('image/.*');
+    }
+
+    // Feed Post photos (up to 6 photos per post)
+    match /posts/{userId}/{postId}/{photoIndex} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId) &&
+                      request.resource.size < 10 * 1024 * 1024 &&
+                      request.resource.contentType.matches('image/.*');
+      allow delete: if isOwner(userId);
+    }
+
+    // Stories media: 24h temporary media, max 25MB (photo or video up to 60s)
+    match /stories/{userId}/{storyId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId) &&
+                      request.resource.size < 25 * 1024 * 1024 &&
+                      (request.resource.contentType.matches('image/.*') || request.resource.contentType.matches('video/.*'));
+      allow delete: if isOwner(userId);
+    }
+
+    // Chat media & voice notes: only participants in the match can read
+    match /chats/{matchId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() &&
+                      request.resource.size < 30 * 1024 * 1024 &&
+                      (request.resource.contentType.matches('image/.*') ||
+                       request.resource.contentType.matches('video/.*') ||
+                       request.resource.contentType.matches('audio/.*'));
+      allow delete: if isAuthenticated();
+    }
+  }
+}

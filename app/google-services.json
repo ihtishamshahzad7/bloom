@@ -1,0 +1,38 @@
+{
+  "project_info": {
+    "project_number": "71002925603",
+    "project_id": "bloom-matchmaking-v50",
+    "storage_bucket": "bloom-matchmaking-v50.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:71002925603:android:9d45e4120ba42c091f092e",
+        "android_client_info": {
+          "package_name": "com.aistudio.bloom.vmkplr",
+          "certificate_hash": [
+            "81c80a39abf45b7a1eca14a78985c0604bba0e6a",
+            "8d1e4ad5527602762ffa6a5e71b4c36263198e828251f84075259b7b4493d544"
+          ]
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "71002925603-placeholder.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBloomPlaceHolderKeyForDevPreview123"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

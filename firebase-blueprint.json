@@ -1,0 +1,62 @@
+{
+  "entities": {
+    "User": {
+      "path": "users/{userId}",
+      "fields": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "age": { "type": "number", "minimum": 18 },
+        "phoneNumber": { "type": "string" },
+        "city": { "type": "string" },
+        "bio": { "type": "string" },
+        "intentions": { "type": "string" },
+        "education": { "type": "string" },
+        "occupation": { "type": "string" },
+        "verified": { "type": "boolean" },
+        "adminApproved": { "type": "boolean" },
+        "photoUrls": { "type": "array" },
+        "interests": { "type": "array" },
+        "values": { "type": "array" },
+        "loveLanguage": { "type": "string" },
+        "createdAt": { "type": "timestamp" }
+      }
+    },
+    "Like": {
+      "path": "likes/{likeId}",
+      "fields": {
+        "fromUserId": { "type": "string" },
+        "toUserId": { "type": "string" },
+        "createdAt": { "type": "timestamp" }
+      }
+    },
+    "Match": {
+      "path": "matches/{matchId}",
+      "fields": {
+        "users": { "type": "array" },
+        "compatibilityScore": { "type": "number" },
+        "lastMessage": { "type": "string" },
+        "lastMessageTimestamp": { "type": "timestamp" },
+        "createdAt": { "type": "timestamp" }
+      }
+    },
+    "Message": {
+      "path": "matches/{matchId}/messages/{messageId}",
+      "fields": {
+        "senderId": { "type": "string" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "timestamp" },
+        "isRead": { "type": "boolean" }
+      }
+    },
+    "Report": {
+      "path": "reports/{reportId}",
+      "fields": {
+        "reporterId": { "type": "string" },
+        "reportedUserId": { "type": "string" },
+        "reason": { "type": "string" },
+        "details": { "type": "string" },
+        "createdAt": { "type": "timestamp" }
+      }
+    }
+  }
+}
