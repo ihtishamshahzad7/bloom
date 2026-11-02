@@ -1,7 +1,6 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -10,41 +9,64 @@ service firebase.storage {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Profile photos & covers: Owner can upload/delete, all authenticated users can read
-    match /users/{userId}/{fileName} {
-      allow read: if isAuthenticated();
-      allow write: if isOwner(userId) &&
-                      request.resource.size < 10 * 1024 * 1024 && // max 10MB
-                      request.resource.contentType.matches('image/.*');
+    function isChatMember(matchId) {
+      return isAuthenticated() && exists(/databases/(default)/documents/matches/$(matchId)) &&
+        request.auth.uid in firestore.get(/databases/(default)/documents/matches/$(matchId)).data.users;
     }
 
-    // Feed Post photos (up to 6 photos per post)
-    match /posts/{userId}/{postId}/{photoIndex} {
+    function isSafeImage() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    function isSafeVideo() {
+      return request.resource.contentType.matches('video/.*');
+    }
+
+    function isSafeAudio() {
+      return request.resource.contentType.matches('audio/.*');
+    }
+
+    function isWithinSize(maxBytes) {
+      return request.resource.size <= maxBytes;
+    }
+
+    match /private/{userId}/{allPaths=**} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /users/{userId}/profile/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isOwner(userId) &&
-                      request.resource.size < 10 * 1024 * 1024 &&
-                      request.resource.contentType.matches('image/.*');
+      allow write: if isOwner(userId) && isSafeImage() && isWithinSize(7 * 1024 * 1024);
       allow delete: if isOwner(userId);
     }
 
-    // Stories media: 24h temporary media, max 25MB (photo or video up to 60s)
+    match /users/{userId}/id/{fileName} {
+      allow read: if isOwner(userId);
+      allow write: if isOwner(userId) && isSafeImage() && isWithinSize(10 * 1024 * 1024);
+    }
+
     match /stories/{userId}/{storyId} {
-      allow read: if isAuthenticated();
-      allow write: if isOwner(userId) &&
-                      request.resource.size < 25 * 1024 * 1024 &&
-                      (request.resource.contentType.matches('image/.*') || request.resource.contentType.matches('video/.*'));
+      allow read: if isAuthenticated() && (userId == request.auth.uid || true);
+      allow write: if isOwner(userId)
+        && (isSafeImage() || isSafeVideo())
+        && isWithinSize(25 * 1024 * 1024)
+        && request.resource.metadata.createdAt is number;
       allow delete: if isOwner(userId);
     }
 
-    // Chat media & voice notes: only participants in the match can read
     match /chats/{matchId}/{fileName} {
+      allow read: if isChatMember(matchId);
+      allow write: if isChatMember(matchId)
+        && (
+          isSafeImage() || isSafeVideo() || isSafeAudio()
+        )
+        && isWithinSize(30 * 1024 * 1024);
+      allow delete: if isChatMember(matchId);
+    }
+
+    match /shared/{uid}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated() &&
-                      request.resource.size < 30 * 1024 * 1024 &&
-                      (request.resource.contentType.matches('image/.*') ||
-                       request.resource.contentType.matches('video/.*') ||
-                       request.resource.contentType.matches('audio/.*'));
-      allow delete: if isAuthenticated();
+      allow write: if isOwner(uid) && isSafeImage() && isWithinSize(6 * 1024 * 1024);
     }
   }
 }
